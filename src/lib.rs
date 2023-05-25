@@ -93,14 +93,24 @@ pub mod classification {
         match spdx_category {
             "Public Domain" => LicenseClassification::Open,
             "Permissive" => LicenseClassification::Open,
-            "Copyleft" => LicenseClassification::Viral,
-            "Copyleft Limited" => LicenseClassification::Viral,
-            "Source-available" => LicenseClassification::Affero,
-            "Commercial" => LicenseClassification::Affero,
-            "Unstated License" => LicenseClassification::Unknown,
-            "Proprietary Free" => LicenseClassification::Unknown,
+            // open for interpretation whether this is viral or not. need manual human intervention.
+            "Copyleft" => LicenseClassification::Unknown,
+            // open for interpretation whether this is viral or not. need manual human intervention.
+            "Copyleft Limited" => LicenseClassification::Unknown,
+
+            // TODO: i think?
+            "Commercial" => LicenseClassification::Commercial,
+
+            // TODO: Lump this in with "Commercial"?
+            "Source-available" => LicenseClassification::Commercial,
+
+            // TODO: lump again with commercial?
+            "Proprietary Free" => LicenseClassification::Commercial,
             "CLA" => LicenseClassification::Unknown,
+
+            // TODO: not really licenses? require manual human intervention?
             "Patent License" => LicenseClassification::Unknown,
+            "Unstated License" => LicenseClassification::Unknown,
             _ => LicenseClassification::Unknown,
         }
     }
