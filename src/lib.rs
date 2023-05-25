@@ -16,6 +16,8 @@
 */
 
 pub mod classification {
+    use std::collections::HashMap;
+
     use serde::{Deserialize, Serialize};
 
     #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -45,6 +47,69 @@ pub mod classification {
         pub short_name: Option<String>,
         pub name: Option<String>,
         pub category: Option<String>,
+    }
+
+    #[derive(Debug, Deserialize, Serialize, Clone)]
+    pub struct ClassificationEntry {
+        pub classification: LicenseClassification,
+    }
+
+    #[derive(Debug, Deserialize, Serialize, Clone)]
+    pub struct Classifier {
+        pub data: HashMap<String, ClassificationEntry>,
+    }
+
+    impl Classifier {
+        pub fn new() -> Classifier {
+            Classifier {
+                data: HashMap::new(),
+            }
+        }
+
+        pub fn add(&mut self, key: &str, classification: ClassificationEntry) {
+            self.data.insert(key.to_owned(), classification);
+        }
+
+        pub fn classify(&self, key: &str) -> Option<LicenseClassification> {
+            match self.data.get(key) {
+                Some(entry) => Some(entry.classification.clone()),
+                None => None,
+            }
+        }
+
+        pub fn get(&self, key: &str) -> Option<LicenseClassification> {
+            self.classify(key)
+        }
+
+        pub fn classify_all(&self, keys: &Vec<String>) -> Vec<Option<LicenseClassification>> {
+            keys.iter().map(|key| self.classify(key)).collect()
+        }
+
+        pub fn load_from_memory(&mut self, raw: Vec<u8>) {
+            self.data = bincode::deserialize(&raw[..]).unwrap();
+        }
+
+        pub fn from_memory(raw: Vec<u8>) -> Classifier {
+            let mut classifier = Classifier::new();
+            classifier.load_from_memory(raw);
+            classifier
+        }
+
+        pub fn load_from_file(&mut self, path: &str) {
+            let raw = std::fs::read(path).unwrap();
+            self.load_from_memory(raw);
+        }
+
+        pub fn from_file(path: &str) -> Classifier {
+            let mut classifier = Classifier::new();
+            classifier.load_from_file(path);
+            classifier
+        }
+
+        pub fn save_to_file(&self, path: &str) {
+            let raw = bincode::serialize(&self.data).unwrap();
+            std::fs::write(path, raw).unwrap();
+        }
     }
 
     pub fn compliancy_check(
