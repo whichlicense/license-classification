@@ -16,7 +16,7 @@
 */
 
 pub mod classification {
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
 
     #[derive(Clone, Debug, Serialize, Deserialize)]
     pub enum LicenseClassification {
@@ -56,7 +56,9 @@ pub mod classification {
             .iter()
             .filter(|c| !match (host_classification, c) {
                 // (what you have in your project, another dependency's license classification)
-                (_, LicenseClassification::Unknown) | (LicenseClassification::Unknown, _) => unknown_is_compliant,
+                (_, LicenseClassification::Unknown) | (LicenseClassification::Unknown, _) => {
+                    unknown_is_compliant
+                }
 
                 (LicenseClassification::Open, LicenseClassification::Open) => true,
                 (LicenseClassification::Open, LicenseClassification::Affero) => false,
@@ -87,22 +89,19 @@ pub mod classification {
         }
     }
 
-    pub fn spdx_category_to_license_classification(spdx_details: &SPDXDetails) -> LicenseClassification {
-        match &spdx_details.category {
-            Some(category) => match category.as_str() {
-                "Public Domain" => LicenseClassification::Open,
-                "Permissive" => LicenseClassification::Open,
-                "Copyleft" => LicenseClassification::Viral,
-                "Copyleft Limited" => LicenseClassification::Viral,
-                "Source-available" => LicenseClassification::Affero,
-                "Commercial" => LicenseClassification::Affero,
-                "Unstated License" => LicenseClassification::Unknown,
-                "Proprietary Free" => LicenseClassification::Unknown,
-                "CLA" => LicenseClassification::Unknown,
-                "Patent License" => LicenseClassification::Unknown,
-                _ => LicenseClassification::Unknown,
-            },
-            None => LicenseClassification::Unknown,
+    pub fn spdx_category_to_license_classification(spdx_category: &str) -> LicenseClassification {
+        match spdx_category {
+            "Public Domain" => LicenseClassification::Open,
+            "Permissive" => LicenseClassification::Open,
+            "Copyleft" => LicenseClassification::Viral,
+            "Copyleft Limited" => LicenseClassification::Viral,
+            "Source-available" => LicenseClassification::Affero,
+            "Commercial" => LicenseClassification::Affero,
+            "Unstated License" => LicenseClassification::Unknown,
+            "Proprietary Free" => LicenseClassification::Unknown,
+            "CLA" => LicenseClassification::Unknown,
+            "Patent License" => LicenseClassification::Unknown,
+            _ => LicenseClassification::Unknown,
         }
     }
 }
