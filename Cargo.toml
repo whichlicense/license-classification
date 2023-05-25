@@ -1,6 +1,6 @@
 [package]
 name = "whichlicense_classification"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 description = "A tool to classify licenses used by the WhichLicense project"
 homepage = "https://whichlicense.com"
