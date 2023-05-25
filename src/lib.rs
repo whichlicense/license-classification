@@ -18,12 +18,16 @@
 pub mod classification {
     use serde::{Serialize, Deserialize};
 
-    #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+    #[derive(Clone, Debug, Serialize, Deserialize)]
     pub enum LicenseClassification {
         /// previously "Open Source"
         Open,
         Viral,
         Affero,
+        Commercial,
+
+        /// This entry shall contain the special case defined within
+        Special(String),
 
         Unknown,
     }
@@ -44,21 +48,29 @@ pub mod classification {
     }
 
     pub fn compliancy_check(
-        host_classification: LicenseClassification,
+        host_classification: &LicenseClassification,
         found_classifications: &Vec<LicenseClassification>,
+        unknown_is_compliant: bool,
     ) -> CompliancyStatus {
         let incompliant_pillars: Vec<LicenseClassification> = found_classifications
             .iter()
             .filter(|c| !match (host_classification, c) {
+                (_, LicenseClassification::Unknown) | (LicenseClassification::Unknown, _) => unknown_is_compliant,
+
                 (LicenseClassification::Open, LicenseClassification::Open) => true,
-                (LicenseClassification::Open, LicenseClassification::Viral) => false,
                 (LicenseClassification::Open, LicenseClassification::Affero) => false,
-                (LicenseClassification::Viral, LicenseClassification::Open) => true,
+                (LicenseClassification::Open, LicenseClassification::Viral) => false,
+                (LicenseClassification::Open, LicenseClassification::Commercial) => false,
                 (LicenseClassification::Viral, LicenseClassification::Viral) => true,
+                (LicenseClassification::Viral, LicenseClassification::Open) => true,
                 (LicenseClassification::Viral, LicenseClassification::Affero) => false,
                 (LicenseClassification::Affero, LicenseClassification::Open) => true,
                 (LicenseClassification::Affero, LicenseClassification::Viral) => true,
                 (LicenseClassification::Affero, LicenseClassification::Affero) => true,
+                (LicenseClassification::Commercial, LicenseClassification::Commercial) => true,
+                (LicenseClassification::Commercial, LicenseClassification::Open) => true,
+                (LicenseClassification::Commercial, LicenseClassification::Affero) => true,
+                (LicenseClassification::Commercial, LicenseClassification::Viral) => true,
                 _ => false,
             })
             .map(|c| c.to_owned())

@@ -21,11 +21,12 @@ fn main() {
     println!("Hello, world!");
 
     let res = compliancy_check(
-        whichlicense_classification::classification::LicenseClassification::Open,
+        &whichlicense_classification::classification::LicenseClassification::Open,
         &vec![
             whichlicense_classification::classification::LicenseClassification::Open,
             whichlicense_classification::classification::LicenseClassification::Viral,
         ],
+        false,
     );
 
     println!("res: {:?}", res);
