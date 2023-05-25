@@ -55,6 +55,7 @@ pub mod classification {
         let incompliant_pillars: Vec<LicenseClassification> = found_classifications
             .iter()
             .filter(|c| !match (host_classification, c) {
+                // (what you have in your project, another dependency's license classification)
                 (_, LicenseClassification::Unknown) | (LicenseClassification::Unknown, _) => unknown_is_compliant,
 
                 (LicenseClassification::Open, LicenseClassification::Open) => true,
@@ -64,14 +65,18 @@ pub mod classification {
                 (LicenseClassification::Viral, LicenseClassification::Viral) => true,
                 (LicenseClassification::Viral, LicenseClassification::Open) => true,
                 (LicenseClassification::Viral, LicenseClassification::Affero) => false,
+                (LicenseClassification::Viral, LicenseClassification::Commercial) => false,
                 (LicenseClassification::Affero, LicenseClassification::Open) => true,
                 (LicenseClassification::Affero, LicenseClassification::Viral) => true,
                 (LicenseClassification::Affero, LicenseClassification::Affero) => true,
+                (LicenseClassification::Affero, LicenseClassification::Commercial) => todo!(),
                 (LicenseClassification::Commercial, LicenseClassification::Commercial) => true,
                 (LicenseClassification::Commercial, LicenseClassification::Open) => true,
                 (LicenseClassification::Commercial, LicenseClassification::Affero) => true,
                 (LicenseClassification::Commercial, LicenseClassification::Viral) => true,
-                _ => false,
+                (_, LicenseClassification::Special(_)) => false,
+                (LicenseClassification::Special(_), _) => false,
+                // _ => false,
             })
             .map(|c| c.to_owned())
             .collect();
