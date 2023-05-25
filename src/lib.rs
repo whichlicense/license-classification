@@ -69,7 +69,7 @@ pub mod classification {
                 (LicenseClassification::Affero, LicenseClassification::Open) => true,
                 (LicenseClassification::Affero, LicenseClassification::Viral) => true,
                 (LicenseClassification::Affero, LicenseClassification::Affero) => true,
-                (LicenseClassification::Affero, LicenseClassification::Commercial) => todo!(),
+                (LicenseClassification::Affero, LicenseClassification::Commercial) => false,
                 (LicenseClassification::Commercial, LicenseClassification::Commercial) => true,
                 (LicenseClassification::Commercial, LicenseClassification::Open) => true,
                 (LicenseClassification::Commercial, LicenseClassification::Affero) => true,
