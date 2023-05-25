@@ -60,4 +60,8 @@ fn main() {
     let test_load_back = Classifier::from_file("./data");
     assert!(test_load_back.data.len() > 0);
 
+
+
+    // TODO: overrides go here. create a file that is committed called defaults.txt and go over them just like above
+
 }

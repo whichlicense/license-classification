@@ -115,6 +115,7 @@ pub mod classification {
     pub fn compliancy_check(
         host_classification: &LicenseClassification,
         found_classifications: &Vec<LicenseClassification>,
+        // TODO: opts struct with unknown_is_compliant and special_is_compliant
         unknown_is_compliant: bool,
     ) -> CompliancyStatus {
         let incompliant_pillars: Vec<LicenseClassification> = found_classifications
@@ -137,7 +138,8 @@ pub mod classification {
                 (LicenseClassification::Affero, LicenseClassification::Viral) => true,
                 (LicenseClassification::Affero, LicenseClassification::Affero) => true,
                 (LicenseClassification::Affero, LicenseClassification::Commercial) => false,
-                (LicenseClassification::Commercial, LicenseClassification::Commercial) => true,
+                // TODO: correct? we don't know if one commercial is compatible with another commercial
+                (LicenseClassification::Commercial, LicenseClassification::Commercial) => false,
                 (LicenseClassification::Commercial, LicenseClassification::Open) => true,
                 (LicenseClassification::Commercial, LicenseClassification::Affero) => true,
                 (LicenseClassification::Commercial, LicenseClassification::Viral) => true,
