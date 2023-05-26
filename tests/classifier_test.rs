@@ -1,21 +1,23 @@
 /*
- *   Copyright (c) 2023 Duart Snel
- *   All rights reserved.
+*   Copyright (c) 2023 Duart Snel
+*   All rights reserved.
 
- *   Licensed under the Apache License, Version 2.0 (the "License");
- *   you may not use this file except in compliance with the License.
- *   You may obtain a copy of the License at
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
 
- *   http://www.apache.org/licenses/LICENSE-2.0
+*   http://www.apache.org/licenses/LICENSE-2.0
 
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
- */
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*/
 
-use whichlicense_classification::classification::{Classifier, ClassificationEntry, LicenseClassification};
+use whichlicense_classification::classification::{
+    ClassificationEntry, Classifier, LicenseClassification,
+};
 
 #[test]
 fn it_loads_from_file() {
@@ -23,7 +25,7 @@ fn it_loads_from_file() {
     assert!(classifier.data.len() > 0);
 
     let mut classifier = Classifier {
-        data: std::collections::HashMap::new()
+        data: std::collections::HashMap::new(),
     };
     classifier.load_from_file("./data");
     assert!(classifier.data.len() > 0);
@@ -33,9 +35,12 @@ fn it_loads_from_file() {
 fn it_loads_from_memory() {
     let mut classifier = Classifier::new();
 
-    classifier.add("test", ClassificationEntry {
-        classification: LicenseClassification::Unknown
-    });
+    classifier.add(
+        "test",
+        ClassificationEntry {
+            classification: LicenseClassification::Unknown,
+        },
+    );
 
     let raw = bincode::serialize(&classifier.data).unwrap();
 
@@ -53,25 +58,34 @@ fn it_loads_from_memory() {
 fn it_saves_to_file() {
     let mut classifier = Classifier::new();
 
-   classifier.add("test", ClassificationEntry {
-    classification: LicenseClassification::Unknown
-   });
+    classifier.add(
+        "test",
+        ClassificationEntry {
+            classification: LicenseClassification::Unknown,
+        },
+    );
 
     classifier.save_to_file("./test_data");
 
     // assert file exists
     assert!(std::path::Path::new("./test_data").exists());
     assert!(Classifier::from_file("./test_data").data.len() > 0);
-    assert!(Classifier::from_file("./test_data").data.get("test").is_some());
+    assert!(Classifier::from_file("./test_data")
+        .data
+        .get("test")
+        .is_some());
 }
 
 #[test]
 fn it_classifies() {
     let mut classifier = Classifier::new();
 
-    classifier.add("test", ClassificationEntry {
-        classification: LicenseClassification::Unknown
-    });
+    classifier.add(
+        "test",
+        ClassificationEntry {
+            classification: LicenseClassification::Unknown,
+        },
+    );
 
     let res = classifier.classify("test");
     assert_eq!(res, LicenseClassification::Unknown);
@@ -81,13 +95,19 @@ fn it_classifies() {
 fn it_classifies_all() {
     let mut classifier = Classifier::new();
 
-    classifier.add("test", ClassificationEntry {
-        classification: LicenseClassification::Open
-    });
+    classifier.add(
+        "test",
+        ClassificationEntry {
+            classification: LicenseClassification::Open,
+        },
+    );
 
-    classifier.add("test2", ClassificationEntry {
-        classification: LicenseClassification::Viral
-    });
+    classifier.add(
+        "test2",
+        ClassificationEntry {
+            classification: LicenseClassification::Viral,
+        },
+    );
 
     let res = classifier.classify_all(&vec!["test", "test2"]);
 
@@ -99,12 +119,15 @@ fn it_classifies_all() {
 }
 
 #[test]
-fn it_gets_from_key(){
+fn it_gets_from_key() {
     let mut classifier = Classifier::new();
 
-    classifier.add("test", ClassificationEntry {
-        classification: LicenseClassification::Open
-    });
+    classifier.add(
+        "test",
+        ClassificationEntry {
+            classification: LicenseClassification::Open,
+        },
+    );
 
     let res = classifier.get("test");
 
@@ -116,19 +139,31 @@ fn it_gets_from_key(){
 fn it_gets_all_from_keys() {
     let mut classifier = Classifier::new();
 
-    classifier.add("test", ClassificationEntry {
-        classification: LicenseClassification::Open
-    });
+    classifier.add(
+        "test",
+        ClassificationEntry {
+            classification: LicenseClassification::Open,
+        },
+    );
 
-    classifier.add("test2", ClassificationEntry {
-        classification: LicenseClassification::Viral
-    });
+    classifier.add(
+        "test2",
+        ClassificationEntry {
+            classification: LicenseClassification::Viral,
+        },
+    );
 
     let res = classifier.get_all(&vec!["test", "test2"]);
 
     assert!(res.len() == 2);
     assert!(res.get(0).is_some());
     assert!(res.get(1).is_some());
-    assert_eq!(res.get(0).unwrap().unwrap().classification, LicenseClassification::Open);
-    assert_eq!(res.get(1).unwrap().unwrap().classification, LicenseClassification::Viral);
+    assert_eq!(
+        res.get(0).unwrap().unwrap().classification,
+        LicenseClassification::Open
+    );
+    assert_eq!(
+        res.get(1).unwrap().unwrap().classification,
+        LicenseClassification::Viral
+    );
 }
