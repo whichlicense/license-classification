@@ -20,7 +20,7 @@ pub mod classification {
 
     use serde::{Deserialize, Serialize};
 
-    #[derive(Clone, Debug, Serialize, Deserialize)]
+    #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
     pub enum LicenseClassification {
         /// previously "Open Source"
         Open,
@@ -70,26 +70,30 @@ pub mod classification {
             self.data.insert(key.to_owned(), classification);
         }
 
-        pub fn classify(&self, key: &str) -> Option<LicenseClassification> {
+        pub fn classify(&self, key: &str) -> LicenseClassification {
             match self.data.get(key) {
-                Some(entry) => Some(entry.classification.clone()),
-                None => None,
+                Some(entry) => entry.classification.clone(),
+                None => LicenseClassification::Unknown,
             }
         }
 
-        pub fn get(&self, key: &str) -> Option<LicenseClassification> {
-            self.classify(key)
-        }
-
-        pub fn classify_all(&self, keys: &Vec<String>) -> Vec<Option<LicenseClassification>> {
+        pub fn classify_all(&self, keys: &Vec<&str>) -> Vec<LicenseClassification> {
             keys.iter().map(|key| self.classify(key)).collect()
         }
 
-        pub fn load_from_memory(&mut self, raw: Vec<u8>) {
+        pub fn get(&self, key: &str) -> Option<&ClassificationEntry> {
+            self.data.get(key)
+        }
+
+        pub fn get_all(&self, keys: &Vec<&str>) -> Vec<Option<&ClassificationEntry>> {
+            keys.iter().map(|key| self.get(key)).collect()
+        }
+
+        pub fn load_from_memory(&mut self, raw: &[u8]) {
             self.data = bincode::deserialize(&raw[..]).unwrap();
         }
 
-        pub fn from_memory(raw: Vec<u8>) -> Classifier {
+        pub fn from_memory(raw: &[u8]) -> Classifier {
             let mut classifier = Classifier::new();
             classifier.load_from_memory(raw);
             classifier
@@ -97,7 +101,7 @@ pub mod classification {
 
         pub fn load_from_file(&mut self, path: &str) {
             let raw = std::fs::read(path).unwrap();
-            self.load_from_memory(raw);
+            self.load_from_memory(&raw);
         }
 
         pub fn from_file(path: &str) -> Classifier {
