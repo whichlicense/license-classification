@@ -148,7 +148,6 @@ pub mod classification {
                 (LicenseClassification::Affero, LicenseClassification::Viral) => true,
                 (LicenseClassification::Affero, LicenseClassification::Affero) => true,
                 (LicenseClassification::Affero, LicenseClassification::Commercial) => false,
-                // TODO: correct? we don't know if one commercial is compatible with another commercial
                 (LicenseClassification::Commercial, LicenseClassification::Commercial) => false,
                 (LicenseClassification::Commercial, LicenseClassification::Open) => true,
                 (LicenseClassification::Commercial, LicenseClassification::Affero) => true,
@@ -183,6 +182,8 @@ pub mod classification {
 
             // TODO: lump again with commercial?
             "Proprietary Free" => LicenseClassification::Commercial,
+
+            // TODO: remove CLAs
             "CLA" => LicenseClassification::Unknown,
 
             // TODO: not really licenses? require manual human intervention?
