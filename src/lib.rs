@@ -20,6 +20,7 @@ pub mod classification {
 
     use serde::{Deserialize, Serialize};
 
+    /// Classifies a license into a box to make compliancy easier.
     #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
     pub enum LicenseClassification {
         /// previously "Open Source"
@@ -70,6 +71,7 @@ pub mod classification {
             self.data.insert(key.to_owned(), classification);
         }
 
+        /// Returns the license classification of the given key, or Unknown if not found.
         pub fn classify(&self, key: &str) -> LicenseClassification {
             match self.data.get(key) {
                 Some(entry) => entry.classification.clone(),
@@ -77,6 +79,9 @@ pub mod classification {
             }
         }
 
+        /// Batch classify a list of keys and returns their classifications.
+        /// 
+        /// Defaults to Unknown for any given key if they are not found.
         pub fn classify_all(&self, keys: &Vec<&str>) -> Vec<LicenseClassification> {
             keys.iter().map(|key| self.classify(key)).collect()
         }
