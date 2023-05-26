@@ -39,6 +39,7 @@ fn it_loads_from_memory() {
         "test",
         ClassificationEntry {
             classification: LicenseClassification::Unknown,
+            spdx_license_key: None,
         },
     );
 
@@ -62,6 +63,7 @@ fn it_saves_to_file() {
         "test",
         ClassificationEntry {
             classification: LicenseClassification::Unknown,
+            spdx_license_key: None,
         },
     );
 
@@ -84,6 +86,7 @@ fn it_classifies() {
         "test",
         ClassificationEntry {
             classification: LicenseClassification::Unknown,
+            spdx_license_key: None,
         },
     );
 
@@ -99,6 +102,7 @@ fn it_classifies_all() {
         "test",
         ClassificationEntry {
             classification: LicenseClassification::Open,
+            spdx_license_key: None,
         },
     );
 
@@ -106,6 +110,7 @@ fn it_classifies_all() {
         "test2",
         ClassificationEntry {
             classification: LicenseClassification::Viral,
+            spdx_license_key: None,
         },
     );
 
@@ -126,6 +131,7 @@ fn it_gets_from_key() {
         "test",
         ClassificationEntry {
             classification: LicenseClassification::Open,
+            spdx_license_key: None,
         },
     );
 
@@ -143,6 +149,7 @@ fn it_gets_all_from_keys() {
         "test",
         ClassificationEntry {
             classification: LicenseClassification::Open,
+            spdx_license_key: None,
         },
     );
 
@@ -150,6 +157,7 @@ fn it_gets_all_from_keys() {
         "test2",
         ClassificationEntry {
             classification: LicenseClassification::Viral,
+            spdx_license_key: None,
         },
     );
 

@@ -33,25 +33,25 @@ fn main() {
     // );
 
     // println!("res: {:?}", res);
-
+    let separator = "[:::]";
     let mut classifier = Classifier::new();
 
     let raw_data = std::fs::read_to_string("./x.txt").unwrap();
 
-    // parse the string, line by line, splitting on \t on each line to get a tuple
-    let mut data: Vec<(String, LicenseClassification)> = raw_data
+    let mut data: Vec<(String, LicenseClassification, String)> = raw_data
         .lines()
         .map(|line| {
-            let mut split = line.split("\t");
+            let mut split = line.split(separator);
             (
                 split.next().unwrap().to_string(),
                 spdx_category_to_license_classification(split.next().unwrap()),
+                split.next().unwrap().to_string(),
             )
         })
         .collect();
 
-    for (key, classification) in data {
-        classifier.add(&key, ClassificationEntry { classification })
+    for (key, classification, spdx_license_key) in data {
+        classifier.add(&key, ClassificationEntry { classification, spdx_license_key: Some(spdx_license_key) })
     }
 
     classifier.save_to_file("./data");

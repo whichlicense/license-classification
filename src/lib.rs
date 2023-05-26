@@ -53,6 +53,7 @@ pub mod classification {
     #[derive(Debug, Deserialize, Serialize, Clone)]
     pub struct ClassificationEntry {
         pub classification: LicenseClassification,
+        pub spdx_license_key: Option<String>,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
