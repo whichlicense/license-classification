@@ -34,7 +34,7 @@ pub mod classification {
         Unknown,
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, PartialEq, Eq, Clone)]
     pub enum CompliancyStatus {
         Compliant,
         NonCompliant(Vec<LicenseClassification>),
