@@ -107,6 +107,8 @@ assert_eq!(
 ## Advanced usage (custom compliancy policy)
 By making use of the ```compliancy_check_custom```function, you may provide your own compliancy checking rules.
 
+> An example would be to only allow open source (Open) licenses to be compliant.
+
 ```rust
 fn make_match_arms() -> HashMap<(LicenseClassification, LicenseClassification), bool> {
     hmap!(
