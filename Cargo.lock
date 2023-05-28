@@ -12,6 +12,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "hmap"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "92fbd0445bda1ac099b76a3fbad67668f915f1873cc1d9b47c02889211fa1ace"
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.58"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -71,5 +77,6 @@ name = "whichlicense_classification"
 version = "1.0.0"
 dependencies = [
  "bincode",
+ "hmap",
  "serde",
 ]
