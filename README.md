@@ -3,7 +3,7 @@ This tool is constructed with the purpose of holding a small database of license
 
 ## Basic usage (classification)
 
-```Rust
+```rust
 // loading from file
 let classifier = Classifier::from_file("./data");
 // or the longer way
@@ -45,7 +45,7 @@ The ```compliancy_check``` function takes in the host license classification tha
 
 > NOTE: the ```LicenseClassification::Unknown``` and ```LicenseClassification::Special``` are always considered to be incompliant with any other license classification; However, there exists an option to force unknown licenses to be compliant.
 
-```Rust
+```rust
 // some examples
 assert_eq!(
     compliancy_check(
@@ -101,5 +101,40 @@ assert_eq!(
         LicenseClassification::Commercial,
         LicenseClassification::Unknown
     ])
+);
+```
+
+## Advanced usage (custom compliancy policy)
+By making use of the ```compliancy_check_custom```function, you may provide your own compliancy checking rules.
+
+```rust
+fn make_match_arms() -> HashMap<(LicenseClassification, LicenseClassification), bool> {
+    hmap!(
+        (LicenseClassification::Open, LicenseClassification::Open) => true,
+        (LicenseClassification::Open, LicenseClassification::Affero) => false,
+        (LicenseClassification::Open, LicenseClassification::Viral) => false,
+        (LicenseClassification::Open, LicenseClassification::Commercial) => false,
+        (LicenseClassification::Viral, LicenseClassification::Viral) => true,
+        (LicenseClassification::Viral, LicenseClassification::Open) => true,
+        (LicenseClassification::Viral, LicenseClassification::Affero) => false,
+        (LicenseClassification::Viral, LicenseClassification::Commercial) => false,
+        (LicenseClassification::Affero, LicenseClassification::Open) => true,
+        (LicenseClassification::Affero, LicenseClassification::Viral) => true,
+        (LicenseClassification::Affero, LicenseClassification::Affero) => true,
+        (LicenseClassification::Affero, LicenseClassification::Commercial) => false,
+        (LicenseClassification::Commercial, LicenseClassification::Commercial) => false,
+        (LicenseClassification::Commercial, LicenseClassification::Open) => true,
+        (LicenseClassification::Commercial, LicenseClassification::Affero) => true,
+        (LicenseClassification::Commercial, LicenseClassification::Viral) => true
+    )
+}
+
+assert_eq!(
+    compliancy_check_custom(
+        &LicenseClassification::Open,
+        &vec![LicenseClassification::Open],
+        &make_match_arms()
+    ),
+    CompliancyStatus::Compliant
 );
 ```
