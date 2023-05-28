@@ -21,7 +21,7 @@ pub mod classification {
     use serde::{Deserialize, Serialize};
 
     /// Classifies a license into a box to make compliancy easier.
-    #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+    #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
     pub enum LicenseClassification {
         /// previously "Open Source"
         Open,
@@ -81,7 +81,7 @@ pub mod classification {
         }
 
         /// Batch classify a list of keys and returns their classifications.
-        /// 
+        ///
         /// Defaults to Unknown for any given key if they are not found.
         pub fn classify_all(&self, keys: &Vec<&str>) -> Vec<LicenseClassification> {
             keys.iter().map(|key| self.classify(key)).collect()
@@ -119,6 +119,29 @@ pub mod classification {
         pub fn save_to_file(&self, path: &str) {
             let raw = bincode::serialize(&self.data).unwrap();
             std::fs::write(path, raw).unwrap();
+        }
+    }
+
+    /// Checks compliancy of classifications based on custom match arms.
+    pub fn compliancy_check_custom(
+        host_classification: &LicenseClassification,
+        found_classifications: &Vec<LicenseClassification>,
+        arms: &HashMap<(LicenseClassification, LicenseClassification), bool>,
+    ) -> CompliancyStatus {
+        let incompliant_pillars: Vec<LicenseClassification> = found_classifications
+            .iter()
+            .filter(|c| {
+                // (what you have in your project, another dependency's license classification)
+                !match arms.get(&(host_classification.clone(), c.clone().clone())) {
+                    Some(is_compliant) => *is_compliant,
+                    None => false,
+                }
+            })
+            .map(|c| c.to_owned())
+            .collect();
+        match incompliant_pillars.len() {
+            0 => CompliancyStatus::Compliant,
+            _ => CompliancyStatus::NonCompliant(incompliant_pillars),
         }
     }
 
