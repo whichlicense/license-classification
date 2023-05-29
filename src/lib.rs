@@ -41,15 +41,6 @@ pub mod classification {
         NonCompliant(Vec<LicenseClassification>),
     }
 
-    #[allow(dead_code)]
-    #[derive(Debug)]
-    pub struct SPDXDetails {
-        pub key: Option<String>,
-        pub short_name: Option<String>,
-        pub name: Option<String>,
-        pub category: Option<String>,
-    }
-
     #[derive(Debug, Deserialize, Serialize, Clone)]
     pub struct ClassificationEntry {
         pub classification: LicenseClassification,
