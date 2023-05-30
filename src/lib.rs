@@ -119,11 +119,12 @@ pub mod classification {
         found_classifications: &Vec<LicenseClassification>,
         arms: &HashMap<(LicenseClassification, LicenseClassification), bool>,
     ) -> CompliancyStatus {
-        let incompliant_pillars: Vec<LicenseClassification> = found_classifications
+        let found_classifications_rc = Rc::from_iter(found_classifications.clone());
+        let incompliant_pillars: Vec<LicenseClassification> = found_classifications_rc
             .iter()
-            .filter(|c| {
+            .filter(|&c| {
                 // (what you have in your project, another dependency's license classification)
-                !match arms.get(&(host_classification.clone(), c.clone().clone())) {
+                !match arms.get(&(host_classification.clone(), c.clone())) {
                     Some(is_compliant) => *is_compliant,
                     None => false,
                 }
@@ -145,7 +146,7 @@ pub mod classification {
         let found_classifications = Rc::from_iter(found_classifications.clone());
         let incompliant_pillars: Vec<LicenseClassification> = found_classifications
             .iter()
-            .filter(|c| !match (host_classification, c) {
+            .filter(|&c| !match (host_classification, c) {
                 // (what you have in your project, another dependency's license classification)
                 (_, LicenseClassification::Unknown) | (LicenseClassification::Unknown, _) => {
                     unknown_is_compliant
