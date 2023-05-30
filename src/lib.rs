@@ -16,7 +16,7 @@
 */
 
 pub mod classification {
-    use std::{collections::HashMap, rc::Rc, sync::Arc};
+    use std::{collections::HashMap, rc::Rc};
 
     use serde::{Deserialize, Serialize};
 
