@@ -16,7 +16,7 @@
 */
 
 pub mod classification {
-    use std::collections::HashMap;
+    use std::{collections::HashMap, rc::Rc, sync::Arc};
 
     use serde::{Deserialize, Serialize};
 
@@ -142,6 +142,7 @@ pub mod classification {
         // TODO: opts struct with unknown_is_compliant and special_is_compliant
         unknown_is_compliant: bool,
     ) -> CompliancyStatus {
+        let found_classifications = Rc::from_iter(found_classifications.clone());
         let incompliant_pillars: Vec<LicenseClassification> = found_classifications
             .iter()
             .filter(|c| !match (host_classification, c) {
