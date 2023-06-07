@@ -5,17 +5,17 @@ This tool is constructed with the purpose of holding a small database of license
 
 ```rust
 // loading from file
-let classifier = Classifier::from_file("./data");
+let classifier = CompatibilityIndex::from_file("./data");
 // or the longer way
-let mut classifier = Classifier {
+let mut classifier = CompatibilityIndex {
     data: std::collections::HashMap::new(),
 };
 classifier.load_from_file("./data");
 
 // loading from memory
-let classifier = Classifier::from_memory(&raw)
+let classifier = CompatibilityIndex::from_memory(&raw)
 // or the longer way
-let mut classifier = Classifier {
+let mut classifier = CompatibilityIndex {
     data: std::collections::HashMap::new(),
 };
 classifier.load_from_memory(&raw);
@@ -24,119 +24,65 @@ classifier.load_from_memory(&raw);
 classifier.save_to_file("./test_data");
 
 // adding an entry
-classifier.add(
-    ""<id_here>"",
-    ClassificationEntry {
-        // the license classification
-        classification: LicenseClassification::Unknown,
-    },
-);
-
-// classifying a license
-classifier.classify("<id_here>");
+classifier.add("host_license", LicenseEntry {
+        name: "host_license".to_owned(),
+        compatibility: hmap!(
+            "compatible_1".to_owned() => CompatibilityEntry {
+                name: "compatible_1".to_owned(),
+                compatible: CompatibilityStatus::Compatible,
+                explanation: "compatible_1".to_owned(),
+            },
+            "incompatible_1".to_owned() => CompatibilityEntry {
+                name: "incompatible_1".to_owned(),
+                compatible: CompatibilityStatus::Incompatible,
+                explanation: "incompatible_1".to_owned(),
+            },
+            
+            "unknown_1".to_owned() => CompatibilityEntry {
+                name: "unknown_1".to_owned(),
+                compatible: CompatibilityStatus::Unknown,
+                explanation: "unknown_1".to_owned(),
+            },
+        ),
+        spdx_license_key: None,
+});
 ```
 
 
-## Basic usage (compliance checking)
-The ```compliancy_check``` function takes in the host license classification that is under the repository it is supposed to check against and all the other license classifications found (e.g., in all transitive dependencies). Said method returns a ```CompliancyStatus``` enum that can be either ```Compliant``` or ```NonCompliant``` with the latter containing a vector of all the non-compliant licenses classifications (i.e., all the classifications that are directly incompatible with the host license classification).
+## Compliance checking
+The ```compliancy_check``` function takes in the host license classification (i.e., leading license) that is under the repository it is supposed to check against and all the other license classifications (i.e., subordinate licenses) found (e.g., in all transitive dependencies).
+Said method returns a ```CompliancyStatus```.
 
 > NOTE: the ```CompliancyStatus::NonCompliant``` does NOT return the classifications that are found to be compliant with the host classification, only the ones that are not.
 
-
-> NOTE: the ```LicenseClassification::Unknown``` and ```LicenseClassification::Special``` are always considered to be incompliant with any other license classification; However, there exists an option to force unknown licenses to be compliant.
-
 ```rust
-// some examples
-assert_eq!(
-    compliancy_check(
-        &LicenseClassification::Open,
-        &vec![LicenseClassification::Affero],
-        false,
-    ),
-    CompliancyStatus::NonCompliant(vec![LicenseClassification::Affero])
-);
+// ...
+let res = index.check_compliancy("host_license", &vec![
+    "compatible_1", // assuming that this is compatible with the host license
+    "compatible_2", // assuming that this is compatible with the host license
+]);
 
-assert_eq!(
-    compliancy_check(
-        &LicenseClassification::Open,
-        &vec![LicenseClassification::Commercial],
-        false,
-    ),
-    CompliancyStatus::NonCompliant(vec![LicenseClassification::Commercial])
-);
 
-assert_eq!(
-    compliancy_check(
-        &LicenseClassification::Open,
-        &vec![LicenseClassification::Viral],
-        false,
-    ),
-    CompliancyStatus::NonCompliant(vec![LicenseClassification::Viral])
-);
 
-assert_eq!(
-    compliancy_check(
-        &LicenseClassification::Unknown,
-        &vec![LicenseClassification::Viral],
-        false,
-    ),
-    CompliancyStatus::NonCompliant(vec![LicenseClassification::Viral])
-);
+let res = index.check_compliancy("host_license", &vec![
+    "compatible_1", // assuming that this is compatible with the host license
+    "compatible_2", // assuming that this is compatible with the host license
+    "incompatible_1", // assuming that this is NOT compatible with the host license
+    "incompatible_2", // assuming that this is NOT compatible with the host license
+]);
 
-// more advanced example
-assert_eq!(
-    compliancy_check(
-        &LicenseClassification::Viral,
-        &vec![
-            LicenseClassification::Open,
-            LicenseClassification::Viral,
-            LicenseClassification::Affero, // incompliant starts here
-            LicenseClassification::Commercial,
-            LicenseClassification::Unknown
-        ],
-        false,
-    ),
-    CompliancyStatus::NonCompliant(vec![
-        LicenseClassification::Affero,
-        LicenseClassification::Commercial,
-        LicenseClassification::Unknown
-    ])
-);
-```
-
-## Advanced usage (custom compliancy policy)
-By making use of the ```compliancy_check_custom```function, you may provide your own compliancy checking rules.
-
-> An example would be to only allow open source (Open) licenses to be compliant.
-
-```rust
-fn make_match_arms() -> HashMap<(LicenseClassification, LicenseClassification), bool> {
-    hmap!(
-        (LicenseClassification::Open, LicenseClassification::Open) => true,
-        (LicenseClassification::Open, LicenseClassification::Affero) => false,
-        (LicenseClassification::Open, LicenseClassification::Viral) => false,
-        (LicenseClassification::Open, LicenseClassification::Commercial) => false,
-        (LicenseClassification::Viral, LicenseClassification::Viral) => true,
-        (LicenseClassification::Viral, LicenseClassification::Open) => true,
-        (LicenseClassification::Viral, LicenseClassification::Affero) => false,
-        (LicenseClassification::Viral, LicenseClassification::Commercial) => false,
-        (LicenseClassification::Affero, LicenseClassification::Open) => true,
-        (LicenseClassification::Affero, LicenseClassification::Viral) => true,
-        (LicenseClassification::Affero, LicenseClassification::Affero) => true,
-        (LicenseClassification::Affero, LicenseClassification::Commercial) => false,
-        (LicenseClassification::Commercial, LicenseClassification::Commercial) => false,
-        (LicenseClassification::Commercial, LicenseClassification::Open) => true,
-        (LicenseClassification::Commercial, LicenseClassification::Affero) => true,
-        (LicenseClassification::Commercial, LicenseClassification::Viral) => true
-    )
-}
-
-assert_eq!(
-    compliancy_check_custom(
-        &LicenseClassification::Open,
-        &vec![LicenseClassification::Open],
-        &make_match_arms()
-    ),
-    CompliancyStatus::Compliant
-);
+assert_eq!(res, CompliancyStatus::NonCompliant(vec![
+    // gives back the incompatible entries along with their explanations.
+    CompatibilityEntry {
+        name: "incompatible_1".to_owned(),
+        compatible: CompatibilityStatus::Incompatible,
+        explanation: "incompatible_1".to_owned(),
+    },
+    CompatibilityEntry {
+        name: "incompatible_2".to_owned(),
+        compatible: CompatibilityStatus::Incompatible,
+        explanation: "incompatible_2".to_owned(),
+    }
+]));
+assert_eq!(res, CompliancyStatus::Compliant);
 ```

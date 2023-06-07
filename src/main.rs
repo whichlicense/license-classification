@@ -15,53 +15,61 @@
 *   limitations under the License.
 */
 
-use whichlicense_classification::classification::{
-    compliancy_check, spdx_category_to_license_classification, ClassificationEntry, Classifier,
-    LicenseClassification,
-};
+use std::collections::HashMap;
+
+use whichlicense_classification::classification::{CompatibilityIndex, LicenseEntry, CompatibilityEntry, CompatibilityStatus};
 
 fn main() {
-    println!("Hello, world!");
-
-    // let res = compliancy_check(
-    //     &whichlicense_classification::classification::LicenseClassification::Open,
-    //     &vec![
-    //         whichlicense_classification::classification::LicenseClassification::Open,
-    //         whichlicense_classification::classification::LicenseClassification::Viral,
-    //     ],
-    //     false,
-    // );
-
-    // println!("res: {:?}", res);
     let separator = "[:::]";
-    let mut classifier = Classifier::new();
+    let mut classifier = CompatibilityIndex::new();
 
     let raw_data = std::fs::read_to_string("./x.txt").unwrap();
 
-    let mut data: Vec<(String, LicenseClassification, String)> = raw_data
+    let data: Vec<(String, String, String)> = raw_data
         .lines()
         .map(|line| {
             let mut split = line.split(separator);
             (
                 split.next().unwrap().to_string(),
-                spdx_category_to_license_classification(split.next().unwrap()),
+                split.next().unwrap().to_string(),
                 split.next().unwrap().to_string(),
             )
         })
         .collect();
 
-    for (key, classification, spdx_license_key) in data {
-        classifier.add(&key, ClassificationEntry { classification, spdx_license_key: Some(spdx_license_key) })
+    for (leading, subordinate, compatible) in data {
+        if classifier.data.contains_key(&leading) {
+            classifier.data.get_mut(&leading).unwrap().compatibility.insert(subordinate.clone(), CompatibilityEntry {
+                name: subordinate.clone(),
+                compatible: match compatible.as_str() {
+                    "Yes" => CompatibilityStatus::Compatible,
+                    "No" => CompatibilityStatus::Incompatible,
+                    _ => CompatibilityStatus::Unknown,
+                },
+                explanation: "".to_string(),
+            });
+        }
+
+        let mut compatibility = HashMap::new();
+        compatibility.insert(subordinate.clone(), CompatibilityEntry {
+            name: subordinate,
+            compatible: match compatible.as_str() {
+                "Yes" => CompatibilityStatus::Compatible,
+                "No" => CompatibilityStatus::Incompatible,
+                _ => CompatibilityStatus::Unknown,
+            },
+            explanation: "".to_string(),
+        });
+        classifier.add(&leading, LicenseEntry {
+            name: leading.clone(),
+            compatibility,
+            spdx_license_key: Some(leading.clone()),
+        })
     }
 
     classifier.save_to_file("./data");
 
     // test loading just in case
-    let test_load_back = Classifier::from_file("./data");
+    let test_load_back = CompatibilityIndex::from_file("./data");
     assert!(test_load_back.data.len() > 0);
-
-
-
-    // TODO: overrides go here. create a file that is committed called defaults.txt and go over them just like above
-
 }
