@@ -130,6 +130,10 @@ pub mod classification {
             std::fs::write(path, raw).unwrap();
         }
 
+        pub fn save_to_memory(&self) -> Vec<u8> {
+            bincode::serialize(&self.data).unwrap()
+        }
+
         pub fn check_compliancy(
             &self,
             leading_license: &str,
